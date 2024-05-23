@@ -24,11 +24,11 @@
               <label for="room_topic">Add Topic</label>
               <input required type="text" name="topic" id="room_topic" list="topic-list" value="{{room.topic.name}}"/>
               <datalist id="topic-list">
+                <select id="room_topic">
                 {% for topic in topics %}
-                  <select id="room_topic">
                     <option value="{{topic.name}}">{{topic.name}}</option>
-                  </select>
                 {% endfor %}
+                  </select>
 
               </datalist>
 
