@@ -1,27 +1,35 @@
 from django.shortcuts import render, redirect
-from .forms import RoomForm, UserForm
+from .forms import RoomForm, UserForm, MyUserCreationForm
 # Create your views here.
 from django.http import HttpResponse
-from .models import Room, Topic, Messages
+from .models import Room, Topic, Messages, User
 from django.db.models import Q
 
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 
 from django.contrib.auth.decorators import login_required
 
-from django.contrib.auth.forms import UserCreationForm
+# from django.contrib.auth.forms import UserCreationForm
+
+from django.core.paginator import Paginator
 
 
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
 
     rooms = Room.objects.filter(Q(topic__name__icontains=q) | Q(name__icontains=q) | Q(description__icontains=q))
-    topics = Topic.objects.all()
+
+    page = Paginator(rooms, 3)
+    page_number = request.GET.get('page')
+    page = page.get_page(page_number)
+
+
+    topics = Topic.objects.all()[0:3]
     room_count = rooms.count()
-    room_messages = Messages.objects.filter(Q(room__topic__name__icontains=q))
-    context = {'rooms': rooms, "topics": topics, "room_count": room_count, "room_messages": room_messages}
+    room_messages = Messages.objects.filter(Q(room__topic__name__icontains=q))[0:3]
+    context = {'rooms': rooms, "topics": topics, "room_count": room_count, "room_messages": room_messages, "page": page}
     return render(request, 'base/home.html', context)
 
 
@@ -129,9 +137,9 @@ def logout_user(request):
     return redirect('home')
 
 def register_page(request):
-    form = UserCreationForm()
+    form = MyUserCreationForm()
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = MyUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.username = user.username.lower()
@@ -172,7 +180,7 @@ def update_user(request):
     form = UserForm(instance=user)
 
     if request.method == "POST":
-        form = UserForm(request.POST, instance=user)
+        form = UserForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
             return redirect('user-profile', pk=user.id)
