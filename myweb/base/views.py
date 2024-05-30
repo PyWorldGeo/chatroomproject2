@@ -15,6 +15,9 @@ from django.contrib.auth.decorators import login_required
 
 from django.core.paginator import Paginator
 
+from django.conf import settings
+from django.core.mail import send_mail
+
 
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
@@ -166,11 +169,31 @@ def delete_message(request, pk):
     return render(request, "base/delete.html", {'obj': message})
 
 def user_profile(request, pk):
+    profile = True
     user = User.objects.get(id=pk)
     topics = Topic.objects.all()
     rooms = user.room_set.all()
     room_messages = user.messages_set.all()
-    context = {"user": user, "topics": topics, "rooms": rooms, "room_messages": room_messages}
+
+    page = Paginator(rooms, 3)
+    page_number = request.GET.get('page')
+    page = page.get_page(page_number)
+
+    if request.method == 'POST':
+        info = f"""
+        Sender: {request.user.username}
+        Email: {request.user.email}
+        """
+        title = request.POST['title']
+        message = request.POST['message'] + info
+        email = user.email
+
+
+        send_mail(subject=title, message=message, from_email=settings.EMAIL_HOST_USER,
+                  recipient_list=[email], fail_silently=False)
+
+    context = {"user": user, "topics": topics, "rooms": rooms,
+               "room_messages": room_messages, 'page': page, 'profile': profile}
     return render(request, "base/profile.html", context)
 
 

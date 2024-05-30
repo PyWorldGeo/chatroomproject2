@@ -41,18 +41,52 @@
                 </div>
     </div>
   {% endfor %}
+
+  <style>
+      .pagination {
+          display: flex;
+          list-style: none;
+          background-color: white;
+
+          li {
+            margin-right: 20px;
+
+          }
+
+          li:hover {
+            color: red;
+          }
+      }
+
+  </style>
   <nav aria-label="Page navigation example">
-    <ul class="pagination">
-      {% if page.has_previous %}
-        <li class="page-item"><a class="page-link" href="{% url 'home' %}?page={{page.previous_page_number}}">Previous</a></li>
-      {% endif %}
+    <ul class="pagination" >
+      {% if profile %}
+        {% if page.has_previous %}
+            <li class="page-item"><a class="page-link" href="{% url 'user-profile' user.id %}?page={{page.previous_page_number}}">Previous</a></li>
+          {% endif %}
 
-      {% for num_page in page.paginator.page_range %}
-        <li class="page-item"><a class="page-link" href="{% url 'home' %}?page={{num_page}}">{{num_page}}</a></li>
-      {% endfor %}
+          {% for num_page in page.paginator.page_range %}
+            <li class="page-item"><a class="page-link" href="{% url 'user-profile' user.id %}?page={{num_page}}">{{num_page}}</a></li>
+          {% endfor %}
 
-      {% if page.has_next %}
-        <li class="page-item"><a class="page-link" href="{% url 'home' %}?page={{page.next_page_number}}">Next</a></li>
+          {% if page.has_next %}
+            <li class="page-item"><a class="page-link" href="{% url 'user-profile' user.id %}?page={{page.next_page_number}}">Next</a></li>
+          {% endif %}
+
+      {% else %}
+
+          {% if page.has_previous %}
+            <li class="page-item"><a class="page-link" href="{% url 'home' %}?page={{page.previous_page_number}}">Previous</a></li>
+          {% endif %}
+
+          {% for num_page in page.paginator.page_range %}
+            <li class="page-item"><a class="page-link" href="{% url 'home' %}?page={{num_page}}">{{num_page}}</a></li>
+          {% endfor %}
+
+          {% if page.has_next %}
+            <li class="page-item"><a class="page-link" href="{% url 'home' %}?page={{page.next_page_number}}">Next</a></li>
+          {% endif %}
       {% endif %}
     </ul>
   </nav>
